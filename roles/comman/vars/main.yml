@@ -1,0 +1,3 @@
+---
+# vars file for comman
+ntpserver: 192.168.1.2

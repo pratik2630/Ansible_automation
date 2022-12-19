@@ -1,0 +1,36 @@
+---
+- name : testing filter options
+  hosts: "{{myself2 | default('aws_ec2')}}" 
+  #If myself var is undefined it will run deualt variable which is aws_Ec2
+
+  remote_user: ec2-user
+  become: yes
+
+  vars:
+    myself: localhost
+    cheese: ['american','cheddar','mozzarella','bleu','manchego','mozzarella','brie']
+    pizza_toppings: ['mozzarella','anchovies','pineapple','bleu','pepperoni','mushrooms','ham']
+
+  tasks:
+    - name: quick echo
+      shell: echo $PATH
+      register: result
+
+    - debug: 
+        msg: "The play failed"
+      when:  result is failed
+
+    - debug: msg="The play changed"
+      when: result is changed
+
+    - debug: msg="The play succeeded"
+      when: result is success
+
+    - debug: msg="The play skipped"
+      when: result is skipped
+
+    - debug: msg="{{cheese | unique}}"
+
+    - debug: msg="{{cheese | difference(pizza_toppings)}}"
+
+    - debug: msg="{{cheese | union(pizza_toppings)}}"

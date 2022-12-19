@@ -1,0 +1,16 @@
+---
+- name: random
+  hosts: aws_ec2
+  become: yes
+  tasks:
+    - shell: echo `id`
+      register: id
+
+    - debug:
+       msg: "{{ id.stdout }}"
+
+    - shell: echo `whoami`
+      register: whoami
+
+    - debug:
+       msg: "{{ whoami.stdout }}"

@@ -1,0 +1,26 @@
+---
+- name: testing blocks and error handling
+  hosts: all
+  remote_user: ec2-user
+  become: yes
+
+  tasks:
+    - include: date.yml
+      #it will run this playbook first then run furthur tasks
+
+    - block:
+      - name: copying in a block
+        copy:
+          src: /tmp/test1.txt
+          dest: /tmp/loops
+
+      rescue:
+        - debug: msg="Stop. There's some error"
+      always:
+        - debug: 
+            msg: "This message will always display"
+
+    - block:
+      - block:
+        - block:
+          - debug: msg="Nesting some blocks just for practice"

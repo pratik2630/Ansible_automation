@@ -1,0 +1,46 @@
+---
+- name: install and configure mariadb
+  hosts: localhost
+  #remote_user: ec2-user
+  become: yes
+
+  # vars:
+  #  mysql_port: 3306
+  
+  vars_files:
+    - maria_vars.yml
+
+  tasks:
+    - name: install mariadb
+      yum:
+        name: mysql-server
+        state: latest
+
+    - name: create mysql configuration file
+      template:
+        src: my.cnf.j2
+        dest: /etc/my.cnf
+      notify:
+        restart mariadb
+
+    - name: create mariadb log file
+      file:
+        path: /var/log/mysqld.log
+        state: touch
+        owner: mysql
+        group: mysql
+        mode: 0775
+
+    - name: start mariadb service
+      service:
+        name: mysqld
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart mariadb
+      service:
+          name: mysqld
+          state: restarted
+
+

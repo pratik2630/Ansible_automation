@@ -1,0 +1,69 @@
+---
+- name: Ansible master playbook
+  hosts: aws_ec2
+  become: yes
+
+  tasks:
+    - name: "Installing docker"
+      package:
+        name: docker
+        state: present
+
+    - name: "Start and enable docker service"
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: "Configure kubernetes repo" 
+      copy:
+        src: ./kubernetes.repo
+        dest: /etc/yum.repos.d/kubernetes.repo
+
+    - name: "kubeadm"
+      #shell: "yum install -y  kubeadm  --disableexcludes=kubernetes"
+      #register: kubeadm
+      #changed_when: false
+      yum:
+        name: kubeadm
+        disable_excludes: kubernetes
+      register: kubeadm
+
+    - debug:
+       msg: "{{ kubeadm }}"
+ 
+    - name: "Enabling kubelet"
+      shell: "systemctl enable kubelet  --now"
+      changed_when: false
+
+    - name: "Pulling Images using KubeAdm"
+      shell: "kubeadm config  images pull"
+      changed_when: false
+
+    - name: "Creating daemon.json file inside /etc/docker"
+      copy:
+        src: ./daemon.json
+        dest: /etc/docker/daemon.json
+
+    - name: "Re-starting Docker"
+      service:
+        name: docker
+        state: restarted
+
+    - name: Installing iproute-tc
+      package:
+        name: iproute-tc
+        state: present
+    - name: "Setting bridge-nf-call-iptables to 1"
+      shell: |
+       echo "1"  > /proc/sys/net/bridge/bridge-nf-call-iptables
+      changed_when: false
+    
+    - name: "Initializing Master"
+      shell: "kubeadm init --pod-network-cidr=10.244.0.0/16  --ignore-preflight-errors=NumCPU --ignore-preflight-errors=Mem"
+      ignore_errors: yes
+      register: init
+
+    - debug:
+       msg: "{{ init }}"
+

@@ -1,0 +1,5 @@
+[myself]
+localhost  ansible_connection=local
+
+[aws_ec2]
+

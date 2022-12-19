@@ -1,0 +1,8 @@
+---
+- name: Package installations for MERN
+  hosts: localhost
+  tasks:
+    - name: "Install Node js"
+      package:
+          name: nodejs:16
+          state: present
